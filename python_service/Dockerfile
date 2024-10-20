@@ -4,8 +4,8 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy requirements.txt into the container
-COPY requirements.txt .
+# Copy the requirements.txt
+COPY requirements.txt /app/requirements.txt
 
 # Upgrade pip and install dependencies
 RUN apt-get update && apt-get install -y gcc && \
@@ -13,10 +13,10 @@ RUN apt-get update && apt-get install -y gcc && \
     pip install -r requirements.txt
 
 # Copy the rest of the application code
-COPY . .
+COPY . /app
 
 # Expose the port your app will run on
-EXPOSE 5000
+EXPOSE 8080
 
-# Command to run your app
-CMD ["python", "app.py"]
+# Use Gunicorn to run the app
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:app"]
