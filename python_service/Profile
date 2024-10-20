@@ -1,1 +1,1 @@
-web: cd python_service && python app.py
+web: python python_service/app.py
