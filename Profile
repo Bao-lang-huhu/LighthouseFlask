@@ -1,1 +1,0 @@
-web: python python_service/app.py
