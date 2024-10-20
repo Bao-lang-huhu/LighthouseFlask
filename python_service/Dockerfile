@@ -4,8 +4,8 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the requirements.txt (directly since Dockerfile is now in the same directory)
-COPY requirements.txt /app/requirements.txt
+# Copy requirements.txt into the container
+COPY requirements.txt .
 
 # Upgrade pip and install dependencies
 RUN apt-get update && apt-get install -y gcc && \
