@@ -1,7 +1,7 @@
 # Use the official Python image
 FROM python:3.11-slim
 
-# Install necessary dependencies for Prophet and other system tools
+# Install necessary dependencies for Prophet and CmdStanPy
 RUN apt-get update && \
     apt-get install -y gcc g++ make wget curl build-essential python3-dev && \
     apt-get install -y libgomp1 && \
@@ -15,7 +15,11 @@ COPY requirements.txt /app/requirements.txt
 
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    python -m cmdstanpy.install_cmdstan --dir /opt/cmdstan --overwrite
+
+# Set environment variable for CmdStan path
+ENV CMDSTAN=/opt/cmdstan/cmdstan
 
 # Copy the rest of the application code
 COPY . /app
