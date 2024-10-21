@@ -6,6 +6,11 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Home route to check if the Flask app is running
+@app.route('/')
+def home():
+    return "Flask app is running!"
+
 @app.route('/forecast', methods=['POST'])
 def forecast():
     print("Received request at /forecast")
