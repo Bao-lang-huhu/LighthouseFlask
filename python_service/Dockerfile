@@ -1,16 +1,9 @@
 # Use the official Python image
 FROM python:3.11-slim
 
-# Install necessary dependencies for Prophet, GLIBC, and other tools
+# Install necessary dependencies
 RUN apt-get update && \
-    apt-get install -y gcc g++ make wget gawk bison && \
-    wget https://ftp.gnu.org/gnu/libc/glibc-2.36.tar.gz && \
-    tar -xvzf glibc-2.36.tar.gz && \
-    cd glibc-2.36 && \
-    mkdir build && cd build && \
-    ../configure --prefix=/opt/glibc-2.36 && \
-    make && make install && \
-    rm -rf /glibc-2.36*
+    apt-get install -y gcc g++ make wget python3-dev build-essential
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -21,6 +14,10 @@ COPY requirements.txt /app/requirements.txt
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
+
+# Install cmdstanpy and build Stan binaries
+RUN pip install cmdstanpy && \
+    python -c "import cmdstanpy; cmdstanpy.install_cmdstan()"
 
 # Copy the rest of the application code
 COPY . /app

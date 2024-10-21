@@ -2,7 +2,9 @@ from flask import Flask, request, jsonify
 import pandas as pd
 from prophet import Prophet
 from flask_cors import CORS
+import cmdstanpy
 
+cmdstanpy.install_cmdstan()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
