@@ -1,9 +1,11 @@
 # Use the official Python image
 FROM python:3.11-slim
 
-# Install necessary dependencies
+# Install necessary dependencies for Prophet and other system tools
 RUN apt-get update && \
-    apt-get install -y gcc g++ make wget python3-dev build-essential
+    apt-get install -y gcc g++ make wget curl build-essential python3-dev && \
+    apt-get install -y libgomp1 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -14,10 +16,6 @@ COPY requirements.txt /app/requirements.txt
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
-
-# Install cmdstanpy and build Stan binaries
-RUN pip install cmdstanpy && \
-    python -c "import cmdstanpy; cmdstanpy.install_cmdstan()"
 
 # Copy the rest of the application code
 COPY . /app
