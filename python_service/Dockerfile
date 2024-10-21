@@ -1,10 +1,9 @@
 # Use the official Python image
 FROM python:3.11-slim
 
-# Install necessary dependencies for Prophet and CmdStanPy
+# Install necessary dependencies for Prophet and GLIBC
 RUN apt-get update && \
-    apt-get install -y gcc g++ make wget curl build-essential python3-dev && \
-    apt-get install -y libgomp1 && \
+    apt-get install -y gcc g++ make wget curl build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory inside the container
