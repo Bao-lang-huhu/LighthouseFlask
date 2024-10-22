@@ -9,7 +9,11 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Home route to check if the Flask app is running
 @app.route('/')
 def home():
-    return "Flask app is running!"
+    return """
+    <h1>Flask App is Running!</h1>
+    <p>Welcome to the Flask application. The app is up and running!</p>
+    <p>To use the forecasting feature, send a POST request to <code>/forecast</code>.</p>
+    """
 
 @app.route('/forecast', methods=['POST'])
 def forecast():
