@@ -6,15 +6,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Home route to check if the Flask app is running
-@app.route('/')
-def home():
-    return """
-    <h1>Flask App is Running!</h1>
-    <p>Welcome to the Flask application. The app is up and running!</p>
-    <p>To use the forecasting feature, send a POST request to <code>/forecast</code>.</p>
-    """
-
 @app.route('/forecast', methods=['POST'])
 def forecast():
     print("Received request at /forecast")
@@ -25,22 +16,44 @@ def forecast():
         return jsonify({"error": "Invalid data format. Expecting a JSON array."}), 400
 
     try:
-        print("Received data:", data)  # Log the received data for debugging
-        df = pd.DataFrame(data)[['ds', 'y']]
-        model = Prophet()
-        model.fit(df)
+        print("Received data:", data)
+        df = pd.DataFrame(data)
 
-        future = model.make_future_dataframe(periods=60, freq='D')
-        forecast = model.predict(future)
+        # Group data by event type and generate forecasts
+        event_forecasts = []
+        for event_type in df['event_type'].unique():
+            event_data = df[df['event_type'] == event_type]
+            event_df = event_data[['ds', 'y']]
+            
+            # Determine the latest date in the dataset
+            latest_date = pd.to_datetime(event_df['ds']).max()
+            print(f"Latest date for {event_type}: {latest_date}")
+            next_month_start = (latest_date + pd.DateOffset(months=1)).replace(day=1)
 
-        filtered_forecast = forecast[(forecast['ds'] >= '2025-01-01') & (forecast['ds'] < '2025-02-01')]
+            # Fit the model and make predictions
+            model = Prophet()
+            model.fit(event_df)
 
-        if not filtered_forecast.empty:
-            print("Forecast successful:", filtered_forecast[['ds', 'yhat']])
-            return jsonify(filtered_forecast[['ds', 'yhat']].to_dict(orient='records'))
-        else:
-            print("No forecast data available")
-            return jsonify({"message": "No forecast data available"}), 404
+            future = model.make_future_dataframe(periods=60, freq='D')
+            forecast = model.predict(future)
+
+            # Filter forecast for the next month after the latest data
+            next_month_end = (next_month_start + pd.DateOffset(months=1)) - pd.DateOffset(days=1)
+            filtered_forecast = forecast[(forecast['ds'] >= next_month_start) & 
+                                         (forecast['ds'] <= next_month_end)]
+
+            # Sum up predictions per event type for the next month
+            if not filtered_forecast.empty:
+                forecast_sum = filtered_forecast['yhat'].sum()
+                event_forecasts.append({
+                    'ds': next_month_start.strftime('%Y-%m-%d'),
+                    'yhat': forecast_sum,
+                    'event_type': event_type  # Include event type
+                })
+
+        print("Forecast successful:", event_forecasts)
+        return jsonify(event_forecasts)
+
     except Exception as e:
         print("Error processing forecast:", e)
         return jsonify({"error": str(e)}), 500
